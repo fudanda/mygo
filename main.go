@@ -2,6 +2,7 @@ package main
 
 import (
 	"flyalien"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -18,12 +19,25 @@ func onlyForV2() flyalien.HandlerFunc {
 	}
 }
 
+func FormatAsDate(t time.Time) string {
+	year, month, day := t.Date()
+	return fmt.Sprintf("%d-%02d-%02d", year, month, day)
+}
+
 func main() {
 	r := flyalien.New()
 	r.Use(flyalien.Logger()) // global midlleware
 
+	// r.SetFuncMap(template.FuncMap{
+	// 	"FormatAsDate": FormatAsDate,
+	// })
+
+	r.LoadHTMLGlob("templates/*")
+
+	r.Static("/static", "./static")
+
 	r.GET("/", func(c *flyalien.Context) {
-		c.HTML(http.StatusOK, "<h1>Hello flyalien</h1>")
+		c.HTML(http.StatusOK, "1.html", nil)
 	})
 	r.GET("/hello", func(c *flyalien.Context) {
 		c.String(http.StatusOK, "hello %s, you're at %s\n", c.Query("name"), c.Path)
@@ -45,7 +59,7 @@ func main() {
 
 	v1 := r.Group("/v1")
 	v1.GET("/hello", func(c *flyalien.Context) {
-		c.HTML(http.StatusOK, "<h1>Hello v1</h1>")
+		c.HTML(http.StatusOK, "1.html", nil)
 	})
 
 	v2 := r.Group("/v2")
@@ -55,6 +69,15 @@ func main() {
 			c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Path)
 		})
 	}
+
+	r.GET("/html", func(c *flyalien.Context) {
+		c.HTML(http.StatusOK, "1.html", nil)
+	})
+
+	r.GET("/panic", func(c *flyalien.Context) {
+		names := []string{"flyalien"}
+		c.String(http.StatusOK, names[100])
+	})
 
 	r.Run(":9999")
 }
