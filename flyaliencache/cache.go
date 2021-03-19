@@ -1,7 +1,7 @@
 package flyaliencache
 
 import (
-	"mygo/flyalien-cache/lru"
+	"flyaliencache/lru"
 	"sync"
 )
 
