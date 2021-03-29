@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"flyalienutil/responsibility"
 	"flyalienutil/util"
 	"fmt"
@@ -20,9 +19,10 @@ type StockInfo struct {
 func (s *StockInfo) Do(c *responsibility.Context) (err error) {
 	fmt.Println(util.RunFuncName(), "获取库存信息...")
 	fmt.Println(util.RunFuncName(), "库存信息校验...")
-	f := -1
-	if f < 0 {
-		return errors.New(UNALLOWED)
-	}
+	//手动抛出异常
+	// f := -1
+	// if f < 0 {
+	// 	return errors.New(UNALLOWED)
+	// }
 	return
 }
