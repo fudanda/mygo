@@ -3,6 +3,8 @@ package main
 import (
 	"flyalienutil/composite"
 	"flyalienutil/composite/component"
+	"flyalienutil/observable"
+	"flyalienutil/observable/subscribe"
 	"flyalienutil/responsibility"
 	"flyalienutil/responsibility/handler"
 	"fmt"
@@ -51,6 +53,82 @@ func main() {
 
 	checkoutPage.Remove(orderComponent)
 	checkoutPage.Do(&composite.Context{})
+
+	//观察者模式
+	fmt.Println("observable | 观察者模式 | --------")
+
+	// 创建 未支付取消订单 “主题”
+	fmt.Println("----------------------- 未支付取消订单 “主题”")
+	orderUnPaidCancelSubject := &observable.ObservableConcrete{}
+	orderUnPaidCancelSubject.Attach(
+		&subscribe.OrderStatus{},
+		&subscribe.OrderStatusLog{},
+		&subscribe.CouponRefund{},
+		&subscribe.PromotionRefund{},
+		&subscribe.StockRefund{},
+	)
+	orderUnPaidCancelSubject.Notify()
+
+	// 创建 超时关单 “主题”
+	fmt.Println("----------------------- 超时关单 “主题”")
+	orderOverTimeSubject := &observable.ObservableConcrete{}
+	orderOverTimeSubject.Attach(
+		&subscribe.OrderStatus{},
+		&subscribe.OrderStatusLog{},
+		&subscribe.CouponRefund{},
+		&subscribe.PromotionRefund{},
+		&subscribe.StockRefund{},
+		&subscribe.Sms{},
+	)
+	orderOverTimeSubject.Notify()
+
+	// 创建 已支付取消订单 “主题”
+	fmt.Println("----------------------- 已支付取消订单 “主题”")
+	orderPaidCancelSubject := &observable.ObservableConcrete{}
+	orderPaidCancelSubject.Attach(
+		&subscribe.OrderStatus{},
+		&subscribe.OrderStatusLog{},
+		&subscribe.CouponRefund{},
+		&subscribe.PromotionRefund{},
+		&subscribe.StockRefund{},
+		&subscribe.GiftCardRefund{},
+		&subscribe.WalletRefund{},
+		&subscribe.Refund{},
+		&subscribe.Sms{},
+	)
+	orderPaidCancelSubject.Notify()
+
+	// 创建 取消发货单 “主题”
+	fmt.Println("----------------------- 取消发货单 “主题”")
+	deliverBillCancelSubject := &observable.ObservableConcrete{}
+	deliverBillCancelSubject.Attach(
+		&subscribe.OrderStatus{},
+		&subscribe.OrderStatusLog{},
+		&subscribe.DeliverBillStatus{},
+		&subscribe.DeliverBillStatusLog{},
+		&subscribe.StockRefund{},
+		&subscribe.GiftCardRefund{},
+		&subscribe.WalletRefund{},
+		&subscribe.Refund{},
+		&subscribe.Sms{},
+	)
+	deliverBillCancelSubject.Notify()
+
+	// 创建 拒收 “主题”
+	fmt.Println("----------------------- 拒收 “主题”")
+	deliverBillRejectSubject := &observable.ObservableConcrete{}
+	deliverBillRejectSubject.Attach(
+		&subscribe.OrderStatus{},
+		&subscribe.OrderStatusLog{},
+		&subscribe.DeliverBillStatus{},
+		&subscribe.DeliverBillStatusLog{},
+		&subscribe.StockRefund{},
+		&subscribe.GiftCardRefund{},
+		&subscribe.WalletRefund{},
+		&subscribe.Refund{},
+		&subscribe.Sms{},
+	)
+	deliverBillRejectSubject.Notify()
 
 	// 成功
 	fmt.Println("Success")
