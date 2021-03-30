@@ -7,6 +7,8 @@ import (
 	"flyalienutil/observable/subscribe"
 	"flyalienutil/responsibility"
 	"flyalienutil/responsibility/handler"
+	"flyalienutil/strategy"
+	"flyalienutil/strategy/payment"
 	"fmt"
 )
 
@@ -129,6 +131,27 @@ func main() {
 		&subscribe.Sms{},
 	)
 	deliverBillRejectSubject.Notify()
+
+	//策略模式
+	fmt.Println("strategy | 策略模式 | --------")
+	ctx := &strategy.Context{
+		PayType: "wechat_pay",
+	}
+
+	// 获取支付方式
+	var instance strategy.PaymentInterface
+	switch ctx.PayType {
+	case strategy.ConstWechatPay:
+		instance = &payment.WechatPay{}
+	case strategy.ConstAliPayWap:
+		instance = &payment.AliPayWap{}
+	case strategy.ConstBankPay:
+		instance = &payment.BankPay{}
+	default:
+		panic("无效的支付方式")
+	}
+	// 支付
+	instance.Pay(ctx)
 
 	// 成功
 	fmt.Println("Success")
