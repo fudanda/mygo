@@ -3,6 +3,7 @@ package main
 import (
 	"flyalienutil/composite"
 	"flyalienutil/composite/component"
+	"flyalienutil/composite/concurrency"
 	"flyalienutil/observable"
 	"flyalienutil/observable/subscribe"
 	"flyalienutil/responsibility"
@@ -10,6 +11,7 @@ import (
 	"flyalienutil/strategy"
 	"flyalienutil/strategy/payment"
 	"fmt"
+	"time"
 )
 
 func main() {
@@ -51,10 +53,10 @@ func main() {
 		orderComponent,
 	)
 
-	checkoutPage.Do(&composite.Context{})
+	checkoutPage.ChildsDo(&composite.Context{})
 
 	checkoutPage.Remove(orderComponent)
-	checkoutPage.Do(&composite.Context{})
+	checkoutPage.ChildsDo(&composite.Context{})
 
 	//观察者模式
 	fmt.Println("observable | 观察者模式 | --------")
@@ -152,6 +154,34 @@ func main() {
 	}
 	// 支付
 	instance.Pay(ctx)
+
+	//并发组合模式
+	fmt.Println("concurrency | 并发组合模式 | --------")
+	concurrencyCheckoutPage := &concurrency.CheckoutPage{}
+	concurrencySkuComponent := &concurrency.Sku{}
+	concurrencyOrderComponent := &concurrency.Order{}
+
+	concurrencySkuComponent.Mount(
+		&concurrency.Promotion{},
+	)
+
+	// 普通组件
+	concurrencyCheckoutPage.Mount(
+		skuComponent,
+		concurrencyOrderComponent,
+	)
+
+	// 并发组件
+	concurrencyCheckoutPage.MountConcurrency(
+		&concurrency.Address{},
+		&concurrency.AfterSale{},
+	)
+
+	// 初始化业务上下文 并设置超时时间
+	ctxConcurrency := composite.GetContext(1 * time.Second)
+	defer ctxConcurrency.CancelFunc()
+	// 开始构建页面组件数据
+	concurrencyCheckoutPage.ChildsDo(ctxConcurrency)
 
 	// 成功
 	fmt.Println("Success")
